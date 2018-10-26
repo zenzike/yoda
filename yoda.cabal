@@ -16,10 +16,13 @@ version:             0.1.0.0
 synopsis:            Parser combinators for young padawans
 
 -- A longer description of the package.
--- description:         
+description:         Yoda is a small parser combinator library. It is not efficient, nor
+                     beautiful, but it hopes to teach young padawans to use the source
+                     and learn to write a parser.
 
 -- URL for the project homepage or repository.
 homepage:            https://github.com/zenzike/yoda
+
 
 -- The license under which the package is released.
 license:             BSD3
@@ -68,3 +71,6 @@ library
   -- Base language which the package is written in.
   default-language:    Haskell2010
   
+source-repository head
+  type:               git
+  location: https://github.com/zenzike/yoda
