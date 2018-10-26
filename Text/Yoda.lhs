@@ -56,7 +56,7 @@ functions are defined outside of this file, namely, those marked under
 >   , return, (>>=)
 >
 >   -- Miscellaneous
->   , item, look, eof, char, string
+>   , item, look, eof, char, string, satisfy
 >   , oneOf, noneOf, sepBy, sepBy1
 >   , (<:>)
 >
@@ -87,6 +87,12 @@ parses, along with remaining unparsed strings.
 
 > parse :: Parser a -> (String -> [(a, String)])
 > parse (Parser p) = p
+
+```
+
+
+```
+
 
 > parseIO :: Parser a -> String -> IO a
 > parseIO p fileName = do
@@ -253,8 +259,8 @@ influence the output of the parse.
 Derived combinators:
 ```lhs
 
-> satisfy :: (Char -> Bool) -> Parser Char
-> satisfy p = item >>= \t -> if p t then pure t else empty
+< satisfy :: (Char -> Bool) -> Parser Char
+< satisfy p = item >>= \t -> if p t then pure t else empty
 
 ```
 Or if you prefer do notation:
@@ -263,6 +269,17 @@ Or if you prefer do notation:
 < satisfy p = do t <- item
 <                if p t then pure t
 <                       else empty
+
+```
+
+More directly, we can avoid monadic combinators with this:
+
+```lhs
+
+> satisfy :: (Char -> Bool) -> Parser Char
+> satisfy p = Parser (\ts -> case ts of
+>   []      -> []
+>   (t:ts') -> [(t, ts') | p t])
 
 > char :: Char -> Parser Char
 > char c = satisfy (c ==)
