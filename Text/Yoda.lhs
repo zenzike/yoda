@@ -31,12 +31,12 @@ automatically tries all alternatives for you.
 
 The module exports the following functions and types. Some of these
 functions are defined outside of this file, namely, those marked under
-`Functor`, `Applicative`, and `Alternative`.
+`Functor`, `Applicative`, `Alternative`, `Monad`.
 
 ```lhs
 
 > {-# LANGUAGE InstanceSigs #-}
-> module Yoda
+> module Text.Yoda
 >   ( Parser
 >   , parse
 >   , parseMaybe
@@ -240,7 +240,14 @@ Derived combinators
 > chainr1 :: Alternative f => f a -> f (a -> a -> a) -> f a
 > chainr1 px pf = flip (foldr ($)) <$> (many (px <**> pf)) <*> px
 
+> prefix :: Alternative f => f (a -> a) -> f a -> f a
+> prefix op p = flip (foldr ($)) <$> many op <*> p
+
+> postfix :: Alternative f => f a -> f (a -> a) -> f a
+> postfix p op = foldl (flip ($)) <$> p <*> many op
+
 ```
+
 Monad
 =====
 
