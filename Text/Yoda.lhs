@@ -93,9 +93,7 @@ parses, along with remaining unparsed strings.
 
 ```
 
-
 ```
-
 
 > parseIO :: Parser a -> String -> IO a
 > parseIO p fileName = do
@@ -163,7 +161,7 @@ Derived combinators:
 < (<$>) = fmap
 <
 < (<$) :: Functor f => a -> f b -> f a
-< (<$) = fmap . const
+< x <$ py = const x <$> py
 
 ```
 
@@ -197,7 +195,10 @@ Derived combinators:
 < px <**> pf = (flip ($)) <$> px <*> pf
 
 
-> between :: Applicative m => m open -> m close -> m a -> m a
+> (<:>) :: Applicative f => f a -> f [a] -> f [a]
+> px <:> pxs = (:) <$> px <*> pxs
+
+> between :: Applicative f => f open -> f close -> f a -> f a
 > between popen pclose px = popen *> px <* pclose
 
 ```
@@ -289,6 +290,19 @@ class assumes that the given Parser is already `Applicative`.
 
 Derived combinators
 -------------------
+
+A simple convenience function that offers the choice between inputs is
+given by `choice`:
+```lhs
+
+> choice :: Alternative f => [f a] -> f a
+> choice = foldr (<|>) empty
+
+```
+
+It's useful to repeat a parser multiple times. The `some px` parser
+parses one or more instances of `px`, whereas the `many px` parser
+parses zero or more instances of `px`.
 ```lhs
 
 < some :: Alternative f => f a -> f [a]
@@ -297,8 +311,12 @@ Derived combinators
 < many :: Alternative f => f a -> f [a]
 < many px = some px <|> pure []
 
-> choice :: Alternative f => [f a] -> f a
-> choice = foldr (<|>) empty
+```
+
+
+
+
+```lhs
 
 > chainl :: Alternative f => f a -> f (a -> a -> a) -> a -> f a
 > chainl px pf x = chainl1 px pf <|> pure x
@@ -318,6 +336,12 @@ Derived combinators
 > postfix :: Alternative f => f a -> f (a -> a) -> f a
 > postfix p op = foldl (flip ($)) <$> p <*> many op
 
+> sepBy  :: Alternative f => f a -> f sep -> f [a]
+> sepBy px psep = sepBy1 px psep <|> pure []
+>
+> sepBy1 :: Alternative f => f a -> f sep -> f [a]
+> sepBy1 px psep = px <:> (many (psep *> px))
+
 ```
 
 Monad
@@ -334,20 +358,20 @@ influence the output of the parse.
 >   (>>=) :: Parser a -> (a -> Parser b) -> Parser b
 >   Parser px >>= f = Parser (\ts -> concat [ parse (f x) ts' | (x, ts') <- px ts ])
 
+
+Satisfy
+=======
+
+The `satisfy` parser accepts characters that satisfy a given
+predicate. It can be derived from the monadic interface as
+follows:
+
 ```
 Derived combinators:
 ```lhs
 
 < satisfy :: (Char -> Bool) -> Parser Char
 < satisfy p = item >>= \t -> if p t then pure t else empty
-
-```
-Or if you prefer do notation:
-```lhs
-
-< satisfy p = do t <- item
-<                if p t then pure t
-<                       else empty
 
 ```
 
@@ -359,53 +383,46 @@ More directly, we can avoid monadic combinators with this:
 > satisfy p = Parser (\ts -> case ts of
 >   []      -> []
 >   (t:ts') -> [(t, ts') | p t])
-
-> char :: Char -> Parser Char
-> char c = satisfy (c ==)
-
-```
-Which is equivalent to the following:
-```lhs
-
-< char :: Char -> Parser Char
-< char c = do t <- item
-<             if c == t then pure c
-<                       else empty
-
+>
 > oneOf :: [Char] -> Parser Char
 > oneOf = satisfy . flip elem
 >
 > noneOf :: [Char] -> Parser Char
 > noneOf cs = satisfy (not . flip elem cs)
+
+```
+Using `satisfy` we can build a useful array of smaller parsers, such
+as one for recognising a particular character, or a particular string.
+```lhs
+
+> char :: Char -> Parser Char
+> char c = satisfy (c ==)
+
 >
 > string :: String -> Parser String
 > string []     = return ""
 > string (c:cs) = char c <:> string cs
->
-> sepBy  :: Alternative f => f a -> f sep -> f [a]
-> sepBy px psep = sepBy1 px psep <|> pure []
->
-> sepBy1 :: Alternative f => f a -> f sep -> f [a]
-> sepBy1 px psep = px <:> (many (psep *> px))
->
-> (<:>) :: Applicative f => f a -> f [a] -> f [a]
-> px <:> pxs = (:) <$> px <*> pxs
-
 
 ```
+
+Miscellaneous
+=============
+
+It is convenient to have a way to remove results from a parse.
+```lhs
+
+> cull :: Parser a -> Parser a
+> cull (Parser px) = Parser (\ts -> take 1 (px ts))
+
+```
+
+
 There is a try after all, but it is only here to make this work with
 code written for other members of the Parsec family.
 ```lhs
 
 > try :: Parser a -> Parser a
 > try = id
-
-```
-It is convenient to have a way to remove results from a parse.
-```lhs
-
-> cull :: Parser a -> Parser a
-> cull (Parser px) = Parser (\ts -> take 1 (px ts))
 
 ```
 
