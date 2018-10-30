@@ -206,6 +206,7 @@ Monoidal
 ========
 
 An equivalent alternative class to `Applicative` is `Monoidal`.
+```lhs
 
 > class Functor f => Monoidal f where
 >   unit :: f ()
@@ -213,31 +214,40 @@ An equivalent alternative class to `Applicative` is `Monoidal`.
 
 > instance Monoidal Parser where
 
+```
 The `unit` parser returns `()` without parsing any input.
+```lhs
 
 >   unit :: Parser ()
 >   unit = Parser (\ts -> [((), ts)])
 
+```
 For example:
+```lhs
 
 < parse (unit) "Hello" = [((), "Hello")]
 
-
+```
 The `mult` combinator takes two parsers `px` and `py` and returns
 pairs of values containing the results of parsing `px` followed by
 `py`.
+```lhs
 
 >   mult :: Parser a -> Parser b -> Parser (a, b)
 >   mult (Parser px) (Parser py) =
 >     Parser (\ts -> [((x, y), ts'') | (x, ts')  <- px ts
 >                                    , (y, ts'') <- py ts'])
 
+```
 This is convenient as the following binary operator:
+```lhs
 
 > (<~>) :: Monoidal f => f a -> f b -> f (a, b)
 > px <~> py =  mult px py
 
+```
 The following derived combinators project out an element of the pair:
+```lhs
 
 > (<~) :: Monoidal f => f a -> f b -> f a
 > px <~ py = fst <$> px <~> py
@@ -245,8 +255,10 @@ The following derived combinators project out an element of the pair:
 > (~>) :: Monoidal f => f a -> f b -> f b
 > px ~> py = snd <$> px <~> py
 
+```
 The combinators for `Applicative` and `Monoidal` can be defined in
 terms of one another.
+```lhs
 
 < pure x    = const x <$> unit
 < pf <*> px = uncurry ($) (pf <~> py)
@@ -257,6 +269,7 @@ terms of one another.
 < px <* py  = px <~ py
 < px *> py  = px ~> py
 
+```
 
 Alternative
 ===========
