@@ -400,6 +400,12 @@ code written for other members of the Parsec family.
 > try :: Parser a -> Parser a
 > try = id
 
+```
+It is convenient to have a way to remove results from a parse.
+```lhs
+
+> cull :: Parser a -> Parser a
+> cull (Parser px) = Parser (\ts -> take 1 (px ts))
 
 ```
 
