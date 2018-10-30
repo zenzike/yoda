@@ -245,6 +245,18 @@ The following derived combinators project out an element of the pair:
 > (~>) :: Monoidal f => f a -> f b -> f b
 > px ~> py = snd <$> px <~> py
 
+The combinators for `Applicative` and `Monoidal` can be defined in
+terms of one another.
+
+< pure x    = const x <$> unit
+< pf <*> px = uncurry ($) (pf <~> py)
+
+< unit       = pure ()
+< mult px py = (,) <$> px <*> py
+
+< px <* py  = px <~ py
+< px *> py  = px ~> py
+
 
 Alternative
 ===========
