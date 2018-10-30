@@ -51,6 +51,9 @@ functions are defined outside of this file, namely, those marked under
 >   -- Alternative
 >   , (<|>), empty, some, many
 >   , chainl, chainl1, chainr, chainr1
+
+>   -- Monoidal
+>   , unit, mult, (<~>)
 >
 >   -- Monad
 >   , return, (>>=)
@@ -193,11 +196,55 @@ Derived combinators:
 < (<**>) :: Applicative f => f a -> f (a -> b) -> f b
 < px <**> pf = (flip ($)) <$> px <*> pf
 
+
 > between :: Applicative m => m open -> m close -> m a -> m a
 > between popen pclose px = popen *> px <* pclose
 
-
 ```
+
+Monoidal
+========
+
+An equivalent alternative class to `Applicative` is `Monoidal`.
+
+> class Functor f => Monoidal f where
+>   unit :: f ()
+>   mult :: f a -> f b -> f (a, b)
+
+> instance Monoidal Parser where
+
+The `unit` parser returns `()` without parsing any input.
+
+>   unit :: Parser ()
+>   unit = Parser (\ts -> [((), ts)])
+
+For example:
+
+< parse (unit) "Hello" = [((), "Hello")]
+
+
+The `mult` combinator takes two parsers `px` and `py` and returns
+pairs of values containing the results of parsing `px` followed by
+`py`.
+
+>   mult :: Parser a -> Parser b -> Parser (a, b)
+>   mult (Parser px) (Parser py) =
+>     Parser (\ts -> [((x, y), ts'') | (x, ts')  <- px ts
+>                                    , (y, ts'') <- py ts'])
+
+This is convenient as the following binary operator:
+
+> (<~>) :: Monoidal f => f a -> f b -> f (a, b)
+> px <~> py =  mult px py
+
+The following derived combinators project out an element of the pair:
+
+> (<~) :: Monoidal f => f a -> f b -> f a
+> px <~ py = fst <$> px <~> py
+>
+> (~>) :: Monoidal f => f a -> f b -> f b
+> px ~> py = snd <$> px <~> py
+
 
 Alternative
 ===========
