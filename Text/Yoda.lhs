@@ -53,7 +53,7 @@ functions are defined outside of this file, namely, those marked under
 >   , chainl, chainl1, chainr, chainr1
 
 >   -- Monoidal
->   , unit, mult, (<~>)
+>   , unit, mult, (<~>), (<~), (~>)
 >
 >   -- Monad
 >   , return, (>>=)
