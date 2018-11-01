@@ -63,6 +63,7 @@ functions are defined outside of this file, namely, those marked under
 >   , oneOf, noneOf, sepBy, sepBy1
 >   , (<:>)
 >
+>   , cull
 >   , try  -- not needed, but here for historic reasons
 >
 >   ) where
