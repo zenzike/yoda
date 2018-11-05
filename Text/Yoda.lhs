@@ -49,8 +49,9 @@ functions are defined outside of this file, namely, those marked under
 >   , pure, (<*>), (<*), (*>), (<**>)
 >
 >   -- Alternative
->   , (<|>), empty, some, many
+>   , (<|>), empty, some, many, optional, choice
 >   , chainl, chainl1, chainr, chainr1
+>   , prefix, postfix
 
 >   -- Monoidal
 >   , unit, mult, (<~>), (<~), (~>)
@@ -317,7 +318,10 @@ parses zero or more instances of `px`.
 
 ```
 
+Giving the option to parse:
 
+< optional :: Alternative f => f a -> f (Maybe a)
+< optional v = Just <$> v <|> pure Nothing
 
 
 ```lhs
