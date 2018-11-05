@@ -62,7 +62,7 @@ functions are defined outside of this file, namely, those marked under
 >   -- Miscellaneous
 >   , item, look, eof, char, string, satisfy
 >   , oneOf, noneOf, sepBy, sepBy1
->   , (<:>)
+>   , (<:>), between
 >
 >   , cull
 >   , try  -- not needed, but here for historic reasons
