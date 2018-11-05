@@ -43,7 +43,7 @@ functions are defined outside of this file, namely, those marked under
 >   , parseIO
 >
 >   -- Functor
->   , (<$>), (<$)
+>   , (<$>), (<$), skip
 >
 >   -- Applicative
 >   , pure, (<*>), (<*), (*>), (<**>)
@@ -163,6 +163,9 @@ Derived combinators:
 <
 < (<$) :: Functor f => a -> f b -> f a
 < x <$ py = const x <$> py
+
+> skip :: Functor f => f a -> f ()
+> skip px = () <$ px
 
 ```
 
